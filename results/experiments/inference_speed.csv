@@ -1,0 +1,5 @@
+algorithm,name,inference_ms_per_sample
+logistic_regression,Logistic Regression,0.06494298600009643
+knn,KNN,0.6333495020004921
+svm,SVM,0.38789383199997246
+random_forest,Random Forest,0.13243640600005166

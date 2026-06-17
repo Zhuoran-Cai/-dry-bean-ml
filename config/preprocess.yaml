@@ -1,0 +1,53 @@
+# 数据预处理配置
+
+paths:
+  data_dir: data
+  train_file: Dry_Bean_Dataset_Dirty_train.csv
+  val_file: Dry_Bean_Dataset_Dirty_val.csv
+  test_file: Dry_Bean_Dataset_Dirty_test.csv
+  results_dir: results
+
+label:
+  ocr_replace:
+    "0": "O"
+    "3": "E"
+  valid_classes:
+    - BARBUNYA
+    - BOMBAY
+    - CALI
+    - DERMASON
+    - HOROZ
+    - SEKER
+    - SIRA
+
+cleaning:
+  illegal_values: ["?", ""]
+  numeric_suffix_strip: " cm"
+
+feature_engineering:
+  ratio_features:
+    - name: AxisRatio
+      formula: MajorAxisLength / MinorAxisLength
+    - name: AreaPerimeterRatio
+      formula: Area / Perimeter
+    - name: ConvexAreaRatio
+      formula: ConvexArea / Area
+    - name: EquivDiameterRatio
+      formula: EquivDiameter / MajorAxisLength
+    - name: RoundnessCompactness
+      formula: roundness * Compactness
+
+iqr:
+  multiplier: 1.5
+  remove_outliers: false
+
+feature_selection:
+  mi_threshold: 0.05
+  multicollinearity_threshold: 0.95
+
+scaling:
+  method: standard
+
+pca:
+  n_components: 2
+  random_state: 42

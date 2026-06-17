@@ -1,0 +1,6 @@
+{
+  "best_test_acc": "SVM",
+  "fastest": "Logistic Regression",
+  "most_robust": "random_forest",
+  "least_overfit": "KNN"
+}

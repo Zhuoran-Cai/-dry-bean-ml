@@ -1,0 +1,51 @@
+# 多分类算法训练与实验配置
+
+paths:
+  processed_dir: results/processed
+  experiment_dir: results/experiments
+  figures_dir: results/figures
+  models_dir: models/trained
+
+experiment:
+  random_state: 42
+  inference_repeats: 100
+  # 推理计时时采样的测试样本数（逐样本 predict，重复 inference_repeats 次）
+  inference_sample_size: 500
+  # 单样本探测耗时超过该阈值 (ms) 时，回退为批量 predict（如随机森林）
+  inference_batch_fallback_ms: 5.0
+
+logistic_regression:
+  C: 1.0
+  max_iter: 1000
+  loss_curve_epochs: 30
+
+knn:
+  n_neighbors: 5
+  weights: distance
+  metric: minkowski
+  # KNN 为非训练型算法，用 k 值扫描代替 loss 曲线
+  k_curve_range: [1, 3, 5, 7, 9, 11, 15, 21, 31]
+
+svm:
+  kernel: rbf
+  C: 10.0
+  gamma: scale
+  # SVM 用 C 参数扫描记录验证集表现
+  c_curve_values: [0.01, 0.1, 1, 10, 100]
+
+random_forest:
+  n_estimators: 200
+  max_depth: null
+  min_samples_split: 2
+  loss_curve_step: 10
+
+robustness:
+  # 噪声类型：gaussian=高斯噪声, uniform=均匀噪声, salt_pepper=椒盐噪声
+  noise_types:
+    - gaussian
+    - uniform
+    - salt_pepper
+  # 高斯 / 均匀噪声强度：标准化特征上的扰动幅度（标准差倍数）
+  noise_levels: [0.05, 0.1, 0.2, 0.3]
+  # 椒盐噪声强度：被替换为极值的特征值比例（破坏性更强，单独设较小档位）
+  salt_pepper_levels: [0.01, 0.02, 0.03, 0.05]

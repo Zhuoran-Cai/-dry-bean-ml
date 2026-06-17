@@ -1,0 +1,13 @@
+[
+  "Perimeter",
+  "MajorAxisLength",
+  "Eccentricity",
+  "ConvexArea",
+  "roundness",
+  "ShapeFactor1",
+  "ShapeFactor2",
+  "ShapeFactor4",
+  "ConvexAreaRatio",
+  "EquivDiameterRatio",
+  "RoundnessCompactness"
+]

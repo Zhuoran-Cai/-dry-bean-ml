@@ -1,0 +1,31 @@
+{
+  "train_samples": 9503,
+  "val_samples": 1347,
+  "test_samples": 2737,
+  "duplicates_removed": 24,
+  "total_features_before_selection": 21,
+  "selected_features": [
+    "Area",
+    "Perimeter",
+    "MajorAxisLength",
+    "Extent",
+    "roundness",
+    "Compactness",
+    "ShapeFactor1",
+    "ShapeFactor2",
+    "ShapeFactor4",
+    "AxisRatio",
+    "ConvexAreaRatio",
+    "EquivDiameterRatio",
+    "RoundnessCompactness"
+  ],
+  "class_names": [
+    "BARBUNYA",
+    "BOMBAY",
+    "CALI",
+    "DERMASON",
+    "HOROZ",
+    "SEKER",
+    "SIRA"
+  ]
+}
