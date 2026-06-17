@@ -117,20 +117,21 @@ Area, Perimeter, MajorAxisLength, MinorAxisLength, AspectRation, Eccentricity, C
 
 ## 🔧 数据处理流程
 
-本项目的数据处理流程包括标签修正、数值清洗、缺失值处理、特征工程、异常值分析、特征筛选、共线性过滤、标准化和 PCA 可视化。
+本项目的数据处理流程包括标签修正、数值清洗、缺失值处理、特征工程、异常值分析、特征筛选、共线性过滤、标准化和 PCA 可视化。整体流程如下：
 
 ```mermaid
 flowchart LR
-    A[原始 CSV] --> B[数据清洗]
-    B --> C[特征工程]
-    C --> D[特征筛选]
-    D --> E[标准化]
-    E --> F[模型训练]
-    F --> G[实验评估]
-
-    B --> B1[标签修正<br/>缺失值填补<br/>非法值处理]
-    C --> C1[比例特征构造<br/>IQR 异常值分析]
-    D --> D1[Mutual Information<br/>Pearson 共线性过滤]
+    A[原始 CSV] --> B[标签修正]
+    B --> C[数值清洗]
+    C --> D[缺失值填补]
+    D --> E[特征工程]
+    E --> F[IQR 异常值分析]
+    F --> G[MI 特征筛选]
+    G --> H[Pearson 共线性过滤]
+    H --> I[StandardScaler 标准化]
+    I --> J[PCA 可视化]
+    J --> K[模型训练]
+    K --> L[实验评估]
 ```
 
 | 模块           | 方法                 | 说明                                                      |
@@ -141,13 +142,51 @@ flowchart LR
 | Feature      | 比值特征构造             | 构造 AxisRatio、AreaPerimeterRatio、ConvexAreaRatio 等形态比例特征 |
 | Outlier      | IQR × 1.5          | 使用箱线图识别离群点，默认不直接删除                                      |
 | Selection    | Mutual Information | 保留对多分类任务贡献较高的特征                                         |
-| Collinearity | Pearson 相关系数       | 剔除 `\|r\| > 0.95` 的高度冗余特征对                              |
+| Collinearity | Pearson 相关系数       | 剔除 `abs(r) > 0.95` 的高度冗余特征对                             |
 | Scaling      | `StandardScaler`   | 仅在训练集 fit，并同步转换验证集与测试集                                  |
-| PCA          | PCA n=2            | 用于特征分析页面的二维散点图展示                                        |
+| PCA          | PCA n=2            | 用于观察 7 类干豆在二维空间中的分布情况                                   |
 
 **最终保留的 13 个特征：**
 
 `Area` · `Perimeter` · `MajorAxisLength` · `Extent` · `roundness` · `Compactness` · `ShapeFactor1` · `ShapeFactor2` · `ShapeFactor4` · `AxisRatio` · `ConvexAreaRatio` · `EquivDiameterRatio` · `RoundnessCompactness`
+
+---
+
+### 特征分析结果
+
+为了验证特征处理的合理性，本项目进一步从异常值、特征贡献、降维分布和共线性四个角度进行特征分析。
+
+#### 1. IQR 箱线图
+
+该图展示训练集中 21 个原始 / 工程特征的箱线图，用于观察不同特征的离群点分布。由于部分极端值可能来自真实豆类形态差异，因此本项目默认只标记异常值，不直接删除样本。
+
+<p align="center">
+  <img src="results/figures/iqr_boxplots.png" alt="IQR 箱线图" width="90%" />
+</p>
+
+#### 2. Mutual Information 特征排名
+
+该图展示各特征与类别标签之间的 Mutual Information 分数。分数越高，说明该特征对多分类任务的信息贡献越大。面积、周长、凸包面积、等效直径等形态特征在分类中具有较高价值。
+
+<p align="center">
+  <img src="results/figures/mi_feature_ranking.png" alt="Mutual Information 特征排名" width="85%" />
+</p>
+
+#### 3. PCA 二维可视化
+
+该图将筛选后的特征降维到二维空间，用于观察 7 类干豆的整体分布。可以看到不同豆类在低维空间中存在一定聚类趋势，但部分类别仍有重叠，说明该任务不是完全线性可分问题。
+
+<p align="center">
+  <img src="results/figures/pca_2d_visualization.png" alt="PCA 二维可视化" width="85%" />
+</p>
+
+#### 4. Pearson 特征共线性热力图
+
+该图展示数值特征之间的 Pearson 相关性。可以看出 Area、Perimeter、ConvexArea、EquivDiameter 等大小相关特征之间存在较强相关性，因此后续通过共线性过滤去除部分冗余特征，降低模型复杂度。
+
+<p align="center">
+  <img src="results/figures/pearson_heatmap.png" alt="Pearson 特征共线性热力图" width="85%" />
+</p>
 
 ---
 
@@ -184,12 +223,12 @@ flowchart LR
 
 ### 综合精度表
 
-|            算法           |   训练精度  |  验证精度  |    测试精度    | 过拟合间隙 ↓ |      推理耗时 ↓      |
-| :---------------------: | :-----: | :----: | :--------: | :-----: | :--------------: |
-|         **SVM**         |  93.75% | 92.20% | **92.95%** |  0.80%  |    0.163 ms/样本   |
-|    **Random Forest**    | 100.00% | 92.06% |   92.47%   |  7.53%  |    0.023 ms/样本   |
-|         **KNN**         | 100.00% | 91.17% |   92.29%   |  7.71%  |    0.035 ms/样本   |
-| **Logistic Regression** |  92.46% | 91.76% |   91.60%   |  0.86%  | **0.0001 ms/样本** |
+| 算法                      |    训练精度 |   验证精度 |       测试精度 | 过拟合间隙 ↓ |           推理耗时 ↓ |
+| ----------------------- | ------: | -----: | ---------: | ------: | ---------------: |
+| **SVM**                 |  93.75% | 92.20% | **92.95%** |   0.80% |      0.163 ms/样本 |
+| **Random Forest**       | 100.00% | 92.06% |     92.47% |   7.53% |      0.023 ms/样本 |
+| **KNN**                 | 100.00% | 91.17% |     92.29% |   7.71% |      0.035 ms/样本 |
+| **Logistic Regression** |  92.46% | 91.76% |     91.60% |   0.86% | **0.0001 ms/样本** |
 
 > 说明：过拟合间隙 = 训练精度 − 测试精度。Random Forest 和 KNN 在训练集上达到 100%，说明二者对训练集拟合较强；SVM 在测试集上取得最高准确率，整体泛化表现较好。
 
@@ -357,3 +396,4 @@ streamlit run app.py --server.port 8505
 * 项目内容涵盖数据预处理、特征工程、多分类算法对比、鲁棒性实验和可视化系统设计
 
 ---
+
